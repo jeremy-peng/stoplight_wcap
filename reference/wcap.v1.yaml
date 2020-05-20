@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: WCAP API define
+  description: WCAP API define
+  contact:
+    name: API Support
+    email: jeremy.peng@asml.com
+  version: 0.0.1
+servers:
+  - url: wcap-brion-tw.asml.com/api/v1
+    description: wcap api
+paths:
+  /teams:
+    summary: teams related api
+    description: teams related api
+    get:
+      summary: get team information
+      description: get team information
+      operationId: getTeamInfo
+      responses:
+        '200':
+          description: Default error sample response
+      tags:
+        - teams
+    post:
+      summary: ''
+      operationId: createTeam
+      responses:
+        '200':
+          description: OK
+      description: create team
+      parameters: []
+      tags:
+        - teams
+tags:
+  - name: teams
+    description: teams related api
