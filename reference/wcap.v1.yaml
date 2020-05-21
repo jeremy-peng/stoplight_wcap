@@ -10,28 +10,195 @@ servers:
   - url: wcap-brion-tw.asml.com/api/v1
     description: wcap api
 paths:
-  /teams:
+  '/teams/{id}':
     summary: teams related api
     description: teams related api
     get:
       summary: get team information
-      description: get team information
-      operationId: getTeamInfo
+      description: |-
+        get team information from given team id,
+        if team id is empty then return the top team information
+      operationId: getTeam
       responses:
         '200':
-          description: Default error sample response
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/teamInfo'
+              examples:
+                example:
+                  value:
+                    name: ''
+                    owners: []
+                    teams:
+                      - id: '12345'
+                        name: AS
+                    members:
+                      - liang
+                      - XXX
+                    id: '11111'
+                    recordFrequency: 0
+                    LastModified: 2020-01-01....
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
       tags:
         - teams
+      parameters: []
     post:
-      summary: ''
+      summary: create team
       operationId: createTeam
       responses:
         '200':
           description: OK
-      description: create team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/teamInfo'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      description: |-
+        create a team under given parent team id,
+        if {id} is empty, it mean create top level team
       parameters: []
+      tags:
+        - teams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/teamInfo'
+            examples: {}
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/teamInfo'
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        description: team id
+        required: true
+    put:
+      summary: update team
+      operationId: updateTeam
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/teamInfo'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      description: 'update a whold team (decide by {id}) from input'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/teamInfo'
+      tags:
+        - teams
+    patch:
+      summary: modified team
+      operationId: modifyTeam
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      description: 'modify a part team (decide by {id}) from input'
+      tags:
+        - teams
+    delete:
+      summary: delete a team
+      operationId: deleteTeam
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      description: 'delete a team '
       tags:
         - teams
 tags:
   - name: teams
     description: teams related api
+components:
+  schemas:
+    teamInfo:
+      title: teamInfo
+      type: object
+      x-examples:
+        teamInfo:
+          name: AS
+          owners:
+            - liang@asml.com
+          teams:
+            - id: '12345'
+              name: MXP-GUI
+          members:
+            - liang
+            - XXX
+          id: '11111'
+          recordFrequency: 0
+          LastModified: 2020-01-01....
+      properties:
+        members:
+          type: array
+          description: 'members email list '
+          items:
+            type: string
+        teams:
+          type: array
+          description: sub team info
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: |
+                  sub team name
+              id:
+                type: string
+                description: sub team id
+        id:
+          type: string
+          description: |
+            team id
+        parentId:
+          type: string
+          description: team parent id
+        owners:
+          type: array
+          description: owner email list
+          items:
+            type: string
+        recordFrequency:
+          type: integer
+          description: "record frequency, \nenum {\n  daily = 0,\n  weekly = 1,\n\n}"
+        lastModified:
+          type: string
+          description: last modified time
+        name:
+          type: string
+          description: team name
+      x-tags:
+        - teams
+  parameters:
+    lon:
+      name: lon
+      in: query
+      description: '**Longitude**. *Example: 139*. Longitude coordinate of the location of your interest. Must use with `lat`.'
+      schema:
+        type: string
