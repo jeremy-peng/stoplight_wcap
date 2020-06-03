@@ -7,10 +7,10 @@ info:
     email: jeremy.peng@asml.com
   version: 0.0.1
 servers:
-  - url: wcap-brion-tw.asml.com/api/v1
+  - url: wcap-brion-tw.asml.com/api
     description: wcap api
 paths:
-  '/teams/{id}':
+  '/teams/{teamId}':
     summary: teams related api
     description: teams related api
     get:
@@ -27,7 +27,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/teamInfo'
               examples:
-                example:
+                team with id:
                   value:
                     name: ''
                     owners: []
@@ -40,6 +40,32 @@ paths:
                     id: '11111'
                     recordFrequency: 0
                     LastModified: 2020-01-01....
+                teams without id:
+                  value:
+                    team:
+                      - name: AS
+                        owners:
+                          - liang@asml.com
+                        subteams:
+                          - id: '12345'
+                            name: MXP-GUI
+                        members:
+                          - liang@asml.com
+                        id: '11111'
+                        recordFrequency: 0
+                        LastModified: 2020-01-01....
+                      - name: PEG
+                        owners:
+                          - yanjun@asml.com
+                        teams:
+                          - id: '12345'
+                            name: MXP-GUI
+                        members:
+                          - yanjun
+                          - XXX
+                        id: '11111'
+                        recordFrequency: 0
+                        LastModified: 2020-01-01....
         '401':
           description: Unauthorized
         '404':
@@ -79,9 +105,9 @@ paths:
     parameters:
       - schema:
           type: string
-        name: id
+        name: teamId
         in: path
-        description: team id
+        description: ''
         required: true
     put:
       summary: update team
@@ -105,21 +131,8 @@ paths:
               $ref: '#/components/schemas/teamInfo'
       tags:
         - teams
-    patch:
-      summary: modified team
-      operationId: modifyTeam
-      responses:
-        '200':
-          description: OK
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
-      description: 'modify a part team (decide by {id}) from input'
-      tags:
-        - teams
     delete:
-      summary: delete a team
+      summary: delete team
       operationId: deleteTeam
       responses:
         '202':
@@ -131,6 +144,147 @@ paths:
       description: 'delete a team '
       tags:
         - teams
+  '/categories/{teamId}':
+    parameters:
+      - schema:
+          type: string
+        name: teamId
+        in: path
+        required: true
+        description: ''
+    get:
+      summary: get category
+      tags:
+        - categories
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/category'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      operationId: getCategory
+      description: Get category from team id
+    post:
+      summary: Create Category
+      operationId: createCategory
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/teamInfo'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      description: create category for a team
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/category'
+        description: ''
+      tags:
+        - categories
+    put:
+      summary: Update Category
+      operationId: updateCategory
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/category'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      description: update category
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/category'
+      tags:
+        - categories
+    delete:
+      summary: Delete Category
+      operationId: deleteCategory
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      description: delete category
+      tags:
+        - categories
+  /login:
+    post:
+      summary: login
+      operationId: login
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                    description: "return code:\nconst (\n\trespOK respCode = 0\n\trespNoAuth\n\trespAuthFail\n\trespNoPermission\n\trespFailToParseBody\n\trespDbErr\n\trespNotExist\n\trespFailToGenToken\n)\n"
+                  Content:
+                    type: string
+                    description: token generated by server
+                  User:
+                    type: object
+                    properties:
+                      ID:
+                        type: string
+                        description: user id/name
+                      Email:
+                        type: string
+                        description: user email
+                      Permission:
+                        type: integer
+              examples:
+                example:
+                  value:
+                    Code: 0
+                    Content: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImplcmVteS5wZW5nQGFzbWwuY29tIiwiZXhwIjoxNTkxMTcxNDE5LCJwZXJtIjoyLCJ1bmFtZSI6ImplcGVuZyJ9.wNPqUA3aTgRUWANh4N3SWTyqvCD-2zPrvrILolubIvc
+                    User:
+                      ID: jepeng
+                      Email: jeremy.peng@asml.com
+                      Permission: 2
+      description: login with ASML LDAP authenticate server
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                User:
+                  type: string
+                  description: User account
+                Passwd:
+                  type: string
+                  description: 'User password '
+            examples:
+              example:
+                value:
+                  User: jepeng
+                  Passwd: XXXXXXX
+      tags:
+        - auth
 tags:
   - name: teams
     description: teams related api
@@ -144,7 +298,7 @@ components:
           name: AS
           owners:
             - liang@asml.com
-          teams:
+          subteams:
             - id: '12345'
               name: MXP-GUI
           members:
@@ -153,13 +307,15 @@ components:
           id: '11111'
           recordFrequency: 0
           LastModified: 2020-01-01....
+      x-tags:
+        - models
       properties:
         members:
           type: array
           description: 'members email list '
           items:
             type: string
-        teams:
+        subteams:
           type: array
           description: sub team info
           items:
@@ -193,8 +349,87 @@ components:
         name:
           type: string
           description: team name
+    category:
+      title: category
+      type: object
+      properties:
+        teamId:
+          type: string
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              categoryName:
+                type: array
+                items:
+                  type: string
+        lastModified:
+          type: string
+      x-examples:
+        example:
+          teamID: '12345'
+          Categories:
+            - Release:
+                - EPDS
+                - TestPlan
+            - Customer:
+                - Enagement
+                - ...
+            - MRD:
+                - ...
+          LastModified: XXX
+      description: ''
       x-tags:
-        - teams
+        - models
+    record:
+      title: record
+      type: object
+      x-tags:
+        - models
+      properties:
+        reporter:
+          type: string
+          description: reporter email
+        teamId:
+          type: string
+        category:
+          type: string
+        subCategory:
+          type: string
+        workContent:
+          type: string
+        plan:
+          type: string
+        actual:
+          type: string
+        completion:
+          type: string
+        dailyRecord:
+          type: array
+          description: daily log work
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              detail:
+                type: string
+              acutal:
+                type: string
+              completion:
+                type: string
+        status:
+          type: string
+        risk:
+          type: string
+        helpNeed:
+          type: string
+        comment:
+          type: string
+        rating:
+          type: integer
+          description: rating from 0 - 5
   parameters:
     lon:
       name: lon
