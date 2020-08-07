@@ -536,3 +536,5 @@ components:
       description: '**Longitude**. *Example: 139*. Longitude coordinate of the location of your interest. Must use with `lat`.'
       schema:
         type: string
+        
+ add
