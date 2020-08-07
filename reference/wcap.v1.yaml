@@ -496,6 +496,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FieldConfig'
+      x-tags:
+        - models
     Milestone:
       title: Milestone
       type: object
@@ -506,6 +508,8 @@ components:
           type: string
         DueDate:
           type: string
+      x-tags:
+        - models
     FieldConfig:
       title: FieldConfig
       type: object
@@ -522,6 +526,9 @@ components:
         Options:
           type: string
           description: options list if Type is FieldList
+      x-tags:
+        - models
+      description: ''
   parameters:
     lon:
       name: lon
