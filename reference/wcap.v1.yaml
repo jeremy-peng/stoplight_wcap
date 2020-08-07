@@ -10,14 +10,15 @@ servers:
   - url: wcap-brion-tw.asml.com/api
     description: wcap api
 paths:
-  '/teams/{teamId}':
+  '/teams/{id}':
     summary: teams related api
     description: teams related api
     get:
       summary: get team information
       description: |-
         get team information from given team id,
-        if team id is empty then return the top team information
+        if team id is empty then return the top team information,
+        recursive decide whether fetch sub teams recursively
       operationId: getTeam
       responses:
         '200':
@@ -29,50 +30,66 @@ paths:
               examples:
                 team with id:
                   value:
-                    name: ''
-                    owners: []
-                    teams:
-                      - id: '12345'
+                    code: 0
+                    errorMessage: ''
+                    Teams:
+                      - id: 5efd533c4a7aa2cada094eb7
+                        parentId: '000000000000000000000000'
                         name: AS
-                    members:
-                      - liang
-                      - XXX
-                    id: '11111'
-                    recordFrequency: 0
-                    LastModified: 2020-01-01....
-                teams without id:
+                        owners:
+                          - liang.zhao@asml.com
+                        subTeams:
+                          - 5efd57768125fa32e73037b8
+                          - 5efda20b23eb8c7dd03b5cae
+                        members:
+                          - liang.zhao@asml.com
+                        LastModified: '1593680395713845000'
+                'teams without id ':
                   value:
-                    team:
-                      - name: AS
+                    code: 0
+                    errorMessage: ''
+                    Teams:
+                      - id: 5efd533c4a7aa2cada094eb7
+                        parentId: '000000000000000000000000'
+                        name: AS
                         owners:
-                          - liang@asml.com
-                        subteams:
-                          - id: '12345'
-                            name: MXP-GUI
+                          - liang.zhao@asml.com
+                        subTeams:
+                          - 5efd57768125fa32e73037b8
+                          - 5efda20b23eb8c7dd03b5cae
                         members:
-                          - liang@asml.com
-                        id: '11111'
-                        recordFrequency: 0
-                        LastModified: 2020-01-01....
-                      - name: PEG
+                          - liang.zhao@asml.com
+                        LastModified: '1593680395713845000'
+                      - id: 5efd56a78125fa32e73037b7
+                        parentId: '000000000000000000000000'
+                        name: PEG
                         owners:
-                          - yanjun@asml.com
-                        teams:
-                          - id: '12345'
-                            name: MXP-GUI
+                          - yanjun.xiao@asml.com
+                        subTeams: null
                         members:
-                          - yanjun
-                          - XXX
-                        id: '11111'
-                        recordFrequency: 0
-                        LastModified: 2020-01-01....
+                          - yanjun.xiao@asml.com
+                        LastModified: '1593661095941728200'
+                      - id: 5efd9e2fd7f3668197965d5d
+                        parentId: '000000000000000000000000'
+                        name: SQA
+                        owners:
+                          - qingguang.ye@asml.com
+                        subTeams: null
+                        members:
+                          - qingguang.ye@asml.com
+                        LastModified: '1593679407014292300'
         '401':
           description: Unauthorized
         '404':
           description: Not Found
       tags:
         - teams
-      parameters: []
+      parameters:
+        - schema:
+            type: boolean
+          in: query
+          name: recursive
+          description: 'whether fetch sub teams recursively  '
     post:
       summary: create team
       operationId: createTeam
@@ -83,6 +100,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/teamInfo'
+              examples:
+                create team: {}
         '401':
           description: Unauthorized
         '404':
@@ -105,9 +124,8 @@ paths:
     parameters:
       - schema:
           type: string
-        name: teamId
+        name: id
         in: path
-        description: ''
         required: true
     put:
       summary: update team
@@ -119,10 +137,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/teamInfo'
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
+              examples: {}
       description: 'update a whold team (decide by {id}) from input'
       requestBody:
         content:
@@ -295,18 +310,17 @@ components:
       type: object
       x-examples:
         teamInfo:
+          id: 5efd533c4a7aa2cada094eb7
+          parentId: '000000000000000000000000'
           name: AS
           owners:
-            - liang@asml.com
-          subteams:
-            - id: '12345'
-              name: MXP-GUI
+            - liang.zhao@asml.com
+          subTeams:
+            - 5efd57768125fa32e73037b8
+            - 5efda20b23eb8c7dd03b5cae
           members:
-            - liang
-            - XXX
-          id: '11111'
-          recordFrequency: 0
-          LastModified: 2020-01-01....
+            - liang.zhao@asml.com
+          LastModified: '1593680395713845000'
       x-tags:
         - models
       properties:
@@ -321,10 +335,6 @@ components:
           items:
             type: object
             properties:
-              name:
-                type: string
-                description: |
-                  sub team name
               id:
                 type: string
                 description: sub team id
@@ -342,7 +352,13 @@ components:
             type: string
         recordFrequency:
           type: integer
-          description: "record frequency, \nenum {\n  daily = 0,\n  weekly = 1,\n\n}"
+          description: |-
+            record frequency, 
+            enum {
+              daily = 0,
+              weekly = 1,
+
+            }
         lastModified:
           type: string
           description: last modified time
@@ -430,6 +446,82 @@ components:
         rating:
           type: integer
           description: rating from 0 - 5
+      x-examples:
+        example-1:
+          id: '12324'
+          reportor: adsf@asml.com
+          teamId: lkfjds23213213dsaf
+          recordFields:
+            category: Release
+            subCategory: E20.10
+            content: testing
+            Plan: 2
+            acutal: 3
+            needHelp: need to check with RD
+          dailyFields:
+            - date: '2020-6-7'
+              detail: testing
+              actual: 1
+            - date: '2020-6-8'
+              detail: testing
+              actual: 1
+          reportTime: '2020-6-8'
+          createTime: '2020-6-8'
+      description: ''
+    project:
+      title: project
+      type: object
+      properties:
+        ID:
+          type: string
+        Name:
+          type: string
+        ProjectLeader:
+          type: string
+        Members:
+          type: array
+          items:
+            type: string
+        Target:
+          type: string
+        StartDate:
+          type: integer
+        EndDate:
+          type: integer
+        Milestones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Milestone'
+        Fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldConfig'
+    Milestone:
+      title: Milestone
+      type: object
+      properties:
+        Name:
+          type: string
+        Target:
+          type: string
+        DueDate:
+          type: string
+    FieldConfig:
+      title: FieldConfig
+      type: object
+      properties:
+        Name:
+          type: string
+        Optional:
+          type: boolean
+        Type:
+          type: integer
+          description: "const (\n\tFieldDate = 0\n\tFieldText = 1\n\tFieldList = 2\n\tFieldNumber = 3\n\tFieldPercentage = 4\n\tFieldLink = 5\n)"
+        Description:
+          type: string
+        Options:
+          type: string
+          description: options list if Type is FieldList
   parameters:
     lon:
       name: lon
